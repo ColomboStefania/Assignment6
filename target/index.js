@@ -8,7 +8,7 @@ const port = process.env.PORT || 4001;
 const app = routing_controllers_1.createKoaServer({
     cors: true,
     controllers: [
-        controller_1.default,
+        controller_1.default
     ],
 });
 db_1.default()

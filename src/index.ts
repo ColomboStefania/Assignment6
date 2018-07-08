@@ -4,12 +4,13 @@ import {createKoaServer} from "routing-controllers"
 import setupDb from './db'
 import GameController from './games/controller'
 
+
 const port = process.env.PORT || 4001
 
 const app = createKoaServer({
    cors: true,
    controllers: [
-        GameController,
+        GameController       
    ], 
    
 })

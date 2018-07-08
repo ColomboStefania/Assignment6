@@ -1,10 +1,13 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
-
-
 import { BaseEntity } from 'typeorm/repository/BaseEntity'
-import { IsString, Length, IsJSON } from 'class-validator';
+import { IsString, Length } from 'class-validator';
 
-
+const gameBoard = [
+    ['o', 'o', 'o'],
+    ['o', 'o', 'o'],
+    ['o', 'o', 'o']
+  ]
+  
 @Entity()
 export default class Game extends BaseEntity {
     
@@ -16,13 +19,22 @@ export default class Game extends BaseEntity {
     @Column('text', {nullable:false})
     name: string
 
-    @IsString()
-    @Length(2, 25)
     @Column('text', {nullable:false})
     color: string
 
-    @IsJSON()
-    @Column('json', {nullable:false})
-    board: string[][]
+    @Column('json', {default: gameBoard})
+    gameBoard: JSON
 
 }
+
+
+
+
+
+
+
+
+
+
+// https://github.com/typeorm/typeorm/issues/150 the boardGame can be defined if a default value is assigned
+//cool stuff about validator https://github.com/typestack/class-validator#validation-decorators

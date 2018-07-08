@@ -11,41 +11,53 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
-    return t;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const routing_controllers_1 = require("routing-controllers");
 const entity_1 = require("./entity");
+const givenColors = ["green", "blue", "red", "yellow", "magenta"];
+const getColor = () => {
+    const randomColor = givenColors[Math.floor(Math.random() * givenColors.length)];
+    return randomColor;
+};
+const moves = (board1, board2) => board1
+    .map((row, y) => row.filter((cell, x) => board2[y][x] !== cell))
+    .reduce((a, b) => a.concat(b))
+    .length;
 let GameController = class GameController {
-    getGame(id) {
-        return entity_1.default.findOne(id);
-    }
     async allGames() {
         const games = await entity_1.default.find();
         return { games };
     }
-    async createGame(game) {
-        const rest = __rest(game, []);
-        const entity = entity_1.default.create(rest);
-        return entity.save();
+    createGame(game) {
+        game.color = getColor();
+        return game.save();
+    }
+    getGame(id) {
+        const game = entity_1.default.findOne(id);
+        if (!game)
+            throw new routing_controllers_1.NotFoundError('There is no game with such ID!');
+        return game;
+    }
+    async updateGame(id, update) {
+        const game = await entity_1.default.findOne(id);
+        if (!game)
+            throw new routing_controllers_1.NotFoundError('There is no game with such ID!');
+        if (!update.name)
+            throw new routing_controllers_1.NotAcceptableError('YOU NEED TO INSERT A NAME!');
+        if (!update.color)
+            throw new routing_controllers_1.NotAcceptableError('COLOR CAN NOT BE EMPTY!');
+        if (!givenColors.includes(update.color))
+            throw new routing_controllers_1.BadRequestError('THIS COLOR IS NOT PART OF THE LIST!');
+        if (!update.gameBoard)
+            throw new routing_controllers_1.BadRequestError('BOARD SHOULD BE HERE');
+        if (moves(game.gameBoard, update.gameBoard) > 1)
+            throw new routing_controllers_1.BadRequestError('ONLY ONE MOVE PLEASE!');
+        return entity_1.default.merge(game, update).save();
     }
 };
 __decorate([
-    routing_controllers_1.Get('/games/:id'),
-    __param(0, routing_controllers_1.Param('id')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number]),
-    __metadata("design:returntype", void 0)
-], GameController.prototype, "getGame", null);
-__decorate([
     routing_controllers_1.Get('/games'),
+    routing_controllers_1.HttpCode(201),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -55,8 +67,23 @@ __decorate([
     __param(0, routing_controllers_1.Body()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [entity_1.default]),
-    __metadata("design:returntype", Promise)
+    __metadata("design:returntype", void 0)
 ], GameController.prototype, "createGame", null);
+__decorate([
+    routing_controllers_1.Get('/games/:id'),
+    __param(0, routing_controllers_1.Param('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], GameController.prototype, "getGame", null);
+__decorate([
+    routing_controllers_1.Put('/games/:id'),
+    __param(0, routing_controllers_1.Param('id')),
+    __param(1, routing_controllers_1.Body()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number, Object]),
+    __metadata("design:returntype", Promise)
+], GameController.prototype, "updateGame", null);
 GameController = __decorate([
     routing_controllers_1.JsonController()
 ], GameController);
